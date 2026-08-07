@@ -367,6 +367,35 @@ body {
 }
 .modal-close:hover { background: var(--pink); transform: translateX(calc(-50% - 14px)) rotate(90deg); }
 
+/* ---------- Server Bar ---------- */
+.server-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+}
+.server-bar label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-2);
+}
+.server-bar select {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.25s;
+}
+.server-bar select:focus {
+    border-color: var(--accent);
+}
+
 .player-wrap {
     position: relative;
     aspect-ratio: 16 / 9;
