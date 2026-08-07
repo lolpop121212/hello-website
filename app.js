@@ -1,16 +1,6 @@
 const JIKAN = 'https://api.jikan.moe/v4';
 const ANILIST = 'https://graphql.anilist.co';
 
-const SAMPLE_SOURCES = [
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-];
-
 const GENRES = [
     { name: 'Action', id: 1 },
     { name: 'Adventure', id: 2 },
@@ -24,22 +14,11 @@ const GENRES = [
 ];
 
 const FALLBACK_CATALOG = [
-    { title: 'Attack on Titan', episodes: 25, year: 2013, rating: 8.5, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg', genres: ['Action', 'Drama', 'Fantasy'], status: 'Finished', synopsis: 'Humanity fights for survival behind enormous walls against man-eating giants called Titans.' },
-    { title: 'Demon Slayer: Kimetsu no Yaiba', episodes: 26, year: 2019, rating: 8.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101922-WBsBl0ClmgYL.jpg', genres: ['Action', 'Fantasy', 'Adventure'], status: 'Finished', synopsis: 'Tanjiro becomes a demon slayer to cure his sister Nezuko and avenge his family.' },
-    { title: 'JUJUTSU KAISEN', episodes: 24, year: 2020, rating: 8.4, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx113415-LHBAeoZDIsnF.jpg', genres: ['Action', 'Supernatural'], status: 'Finished', synopsis: 'Yuji swallows a cursed finger and joins a school of sorcerers to fight curses.' },
-    { title: 'Death Note', episodes: 37, year: 2006, rating: 8.4, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1535-kUgkcrfOrkUM.jpg', genres: ['Thriller', 'Psychological'], status: 'Finished', synopsis: 'A student finds a notebook that kills anyone whose name is written in it.' },
-    { title: 'My Hero Academia', episodes: 24, year: 2016, rating: 7.7, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21459-nYh85uj2Fuwr.jpg', genres: ['Action', 'School'], status: 'Finished', synopsis: 'A quirkless boy trains to become the world’s greatest hero.' },
-    { title: 'Hunter x Hunter (2011)', episodes: 148, year: 2011, rating: 8.9, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx11061-y5gsT1hoHuHw.png', genres: ['Action', 'Adventure'], status: 'Finished', synopsis: 'Gon becomes a Hunter to find his father and faces deadly challenges.' },
-    { title: 'One-Punch Man', episodes: 12, year: 2015, rating: 8.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21087-B5DHjqZ3kW4b.jpg', genres: ['Action', 'Comedy'], status: 'Finished', synopsis: 'An overpowered hero defeats every villain with a single punch.' },
-    { title: 'ONE PIECE', episodes: 1000, year: 1999, rating: 8.7, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21-ELSYx3yMPcKM.jpg', genres: ['Action', 'Adventure'], status: 'Airing', synopsis: 'Monkey D. Luffy sails with his pirate crew to find the One Piece treasure.' },
-    { title: 'Tokyo Ghoul', episodes: 12, year: 2014, rating: 7.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b20605-k665mVkSug8D.jpg', genres: ['Action', 'Horror'], status: 'Finished', synopsis: 'A student becomes half-ghoul and must live between both worlds.' },
-    { title: 'Fullmetal Alchemist: Brotherhood', episodes: 64, year: 2009, rating: 9.0, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx5114-nSWCgQlmOMtj.jpg', genres: ['Action', 'Drama'], status: 'Finished', synopsis: 'Two brothers search for the Philosopher’s Stone after a forbidden alchemy ritual.' },
-    { title: 'Naruto', episodes: 220, year: 2002, rating: 8.0, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20-dE6UHbFFg1A5.jpg', genres: ['Action', 'Adventure'], status: 'Finished', synopsis: 'A young ninja with a sealed demon works to become the leader of his village.' },
-    { title: 'Sword Art Online', episodes: 25, year: 2012, rating: 7.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx11757-SxYDUzdr9rh2.jpg', genres: ['Action', 'Fantasy'], status: 'Finished', synopsis: 'Players trapped in a VR game must clear it to survive.' },
-    { title: 'Sousou no Frieren', episodes: 28, year: 2023, rating: 9.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx154587-qQTzQnEJJ3oB.jpg', genres: ['Adventure', 'Drama', 'Fantasy'], status: 'Finished', synopsis: 'An elven mage journeys to a heaven to meet a long-lost friend.' },
-    { title: 'Steins;Gate', episodes: 24, year: 2011, rating: 9.1, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx9253-tIUXF2gfU8Sg.jpg', genres: ['Sci-Fi', 'Thriller'], status: 'Finished', synopsis: 'A scientist discovers he can send messages to the past and alters fate.' },
-    { title: 'A Silent Voice', episodes: 1, year: 2016, rating: 8.8, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20954-sYRfE5jQRtSB.jpg', genres: ['Drama', 'Romance'], status: 'Finished', synopsis: 'A former bully seeks redemption with the deaf girl he once tormented.' },
-    { title: 'Your Name.', episodes: 1, year: 2016, rating: 8.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21519-SUo3ZQuCbYhJ.png', genres: ['Drama', 'Fantasy'], status: 'Finished', synopsis: 'Two strangers mysteriously swap bodies and change each other’s lives.' },
+    { id: 16498, title: 'Attack on Titan', episodes: 25, year: 2013, rating: 8.5, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg', genres: ['Action', 'Drama', 'Fantasy'], status: 'Finished', synopsis: 'Humanity fights for survival behind enormous walls against man-eating giants called Titans.' },
+    { id: 101922, title: 'Demon Slayer: Kimetsu no Yaiba', episodes: 26, year: 2019, rating: 8.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101922-WBsBl0ClmgYL.jpg', genres: ['Action', 'Fantasy', 'Adventure'], status: 'Finished', synopsis: 'Tanjiro becomes a demon slayer to cure his sister Nezuko and avenge his family.' },
+    { id: 113415, title: 'JUJUTSU KAISEN', episodes: 24, year: 2020, rating: 8.4, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx113415-LHBAeoZDIsnF.jpg', genres: ['Action', 'Supernatural'], status: 'Finished', synopsis: 'Yuji swallows a cursed finger and joins a school of sorcerers to fight curses.' },
+    { id: 1535, title: 'Death Note', episodes: 37, year: 2006, rating: 8.4, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1535-kUgkcrfOrkUM.jpg', genres: ['Thriller', 'Psychological'], status: 'Finished', synopsis: 'A student finds a notebook that kills anyone whose name is written in it.' },
+    { id: 21459, title: 'My Hero Academia', episodes: 24, year: 2016, rating: 7.7, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21459-nYh85uj2Fuwr.jpg', genres: ['Action', 'School'], status: 'Finished', synopsis: 'A quirkless boy trains to become the world’s greatest hero.' },
 ];
 
 let animeList = [];
@@ -51,7 +30,7 @@ let lastQuery = '';
 const $ = (id) => document.getElementById(id);
 const grid = $('anime-grid');
 const modal = $('modal');
-const video = $('video');
+const embedPlayer = $('embed-player');
 const toastEl = $('toast');
 
 function toast(msg) {
@@ -89,12 +68,12 @@ const mapJikan = (a) => ({
 });
 
 const mapAniList = (m) => ({
-    id: null,
+    id: m.id,
     title: m.title.english || m.title.romaji,
     image: m.coverImage.large,
     rating: (m.averageScore || 0) / 10,
     episodes: m.episodes || 12,
-    year: m.startDate.year || '',
+    year: m.startDate ? m.startDate.year : '',
     synopsis: '',
     genres: (m.genres || []).slice(0, 3),
     status: m.status || '',
@@ -111,6 +90,7 @@ async function postAniList(query, variables = {}) {
 }
 
 const ANILIST_BASE = `
+    id
     title { romaji english }
     startDate { year }
     coverImage { large }
@@ -140,7 +120,7 @@ async function loadTrending() {
     }
     lastQuery = '';
     $('search').value = '';
-    setSection('Trending Now', `${animeList.length} titles · ${source}`, '🔥');
+    setSectionTitle('Trending Now', `${animeList.length} titles · ${source}`, '🔥');
     render();
 }
 
@@ -212,16 +192,17 @@ function render(filter = '') {
     });
 }
 
-function sourceFor(ep) {
-    return SAMPLE_SOURCES[(ep - 1) % SAMPLE_SOURCES.length];
+function getEmbedUrl(animeId, ep) {
+    return `https://player.vidplus.to/embed/anime/${animeId}/${ep}?autoplay=true&poster=true`;
 }
 
 let episodeMeta = [];
 
 function playEpisode(ep) {
     currentEp = ep;
-    video.src = sourceFor(ep);
-    video.play().catch(() => {});
+    if (current && current.id) {
+        embedPlayer.src = getEmbedUrl(current.id, ep);
+    }
     $('mask-ep').textContent = ep;
     document.querySelectorAll('.ep-btn').forEach((b) => {
         b.classList.toggle('current', +b.dataset.ep === ep);
@@ -299,9 +280,7 @@ function loadEpisodeMeta(anime) {
 
 function closeModal() {
     modal.hidden = true;
-    video.pause();
-    video.removeAttribute('src');
-    video.load();
+    embedPlayer.src = '';
     document.body.style.overflow = '';
 }
 
@@ -310,13 +289,16 @@ $('modal-backdrop').addEventListener('click', closeModal);
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !modal.hidden) closeModal();
 });
-video.addEventListener('play', () => $('player-mask').classList.add('hidden'));
-video.addEventListener('pause', () => $('player-mask').classList.remove('hidden'));
-$('player-mask').addEventListener('click', () => video.play());
+
+$('player-mask').addEventListener('click', () => {
+    $('player-mask').classList.add('hidden');
+});
+
 $('logo').addEventListener('click', () => {
     closeModal();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
 $('surprise').addEventListener('click', () => {
     if (animeList.length) openAnime(animeList[Math.floor(Math.random() * animeList.length)]);
 });
