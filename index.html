@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AniFlow - Stream Anime</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
 </head>
 <body>
@@ -65,7 +65,7 @@
     </main>
 
     <footer class="footer">
-        <p>AniFlow · Dark &amp; dreamy · Data from the public <span>MyAnimeList</span> API</p>
+        <p>AniFlow · Dark &amp; dreamy · Data from public <span>MyAnimeList &amp; AniList</span> APIs</p>
     </footer>
 
     <div class="modal" id="modal" hidden>
@@ -73,7 +73,7 @@
         <div class="modal-panel" id="modal-panel" role="dialog" aria-modal="true">
             <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
             <div class="player-wrap">
-                <video id="video" controls playsinline preload="metadata"></video>
+                <iframe id="embed-player" src="" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
                 <div class="player-mask" id="player-mask">
                     <div class="play-ring">▶</div>
                     <p class="player-now">Episode <span id="mask-ep">1</span></p>
@@ -102,6 +102,6 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>
