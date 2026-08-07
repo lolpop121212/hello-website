@@ -31,6 +31,7 @@ const $ = (id) => document.getElementById(id);
 const grid = $('anime-grid');
 const modal = $('modal');
 const embedPlayer = $('embed-player');
+const serverSelect = $('server-select');
 const toastEl = $('toast');
 
 function toast(msg) {
@@ -192,8 +193,16 @@ function render(filter = '') {
     });
 }
 
-function getEmbedUrl(animeId, ep) {
-    return `https://player.vidplus.to/embed/anime/${animeId}/${ep}?autoplay=true&poster=true`;
+function getEmbedUrl(animeId, ep, server) {
+    switch (server) {
+        case 'vidsrc2':
+            return `https://vidsrc.cc/v2/embed/anime/${animeId}/${ep}`;
+        case 'embed2':
+            return `https://2embed.org/embed/anime/${animeId}/${ep}`;
+        case 'vidsrc':
+        default:
+            return `https://vidsrc.icu/embed/anime/${animeId}/${ep}`;
+    }
 }
 
 let episodeMeta = [];
@@ -201,7 +210,7 @@ let episodeMeta = [];
 function playEpisode(ep) {
     currentEp = ep;
     if (current && current.id) {
-        embedPlayer.src = getEmbedUrl(current.id, ep);
+        embedPlayer.src = getEmbedUrl(current.id, ep, serverSelect.value);
     }
     $('mask-ep').textContent = ep;
     document.querySelectorAll('.ep-btn').forEach((b) => {
@@ -216,6 +225,13 @@ function playEpisode(ep) {
         $('ep-name').title = '';
     }
 }
+
+serverSelect.addEventListener('change', () => {
+    if (current) {
+        playEpisode(currentEp);
+        toast(`Switched server to ${serverSelect.options[serverSelect.selectedIndex].text}`);
+    }
+});
 
 function openAnime(anime) {
     current = anime;
