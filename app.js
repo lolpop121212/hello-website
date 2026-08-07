@@ -1,4 +1,5 @@
-const API = 'https://api.jikan.moe/v4';
+const JIKAN = 'https://api.jikan.moe/v4';
+const ANILIST = 'https://graphql.anilist.co';
 
 const SAMPLE_SOURCES = [
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
@@ -10,7 +11,25 @@ const SAMPLE_SOURCES = [
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
 ];
 
+const FALLBACK_CATALOG = [
+    { title: 'Attack on Titan', episodes: 25, year: 2013, rating: 8.5, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg', genres: ['Action', 'Drama', 'Fantasy'], status: 'Finished', synopsis: 'Humanity fights for survival behind enormous walls against man-eating giants called Titans.' },
+    { title: 'Demon Slayer: Kimetsu no Yaiba', episodes: 26, year: 2019, rating: 8.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101922-WBsBl0ClmgYL.jpg', genres: ['Action', 'Fantasy', 'Adventure'], status: 'Finished', synopsis: 'Tanjiro becomes a demon slayer to cure his sister Nezuko and avenge his family.' },
+    { title: 'JUJUTSU KAISEN', episodes: 24, year: 2020, rating: 8.4, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx113415-LHBAeoZDIsnF.jpg', genres: ['Action', 'Supernatural'], status: 'Finished', synopsis: 'Yuji swallows a cursed finger and joins a school of sorcerers to fight curses.' },
+    { title: 'Death Note', episodes: 37, year: 2006, rating: 8.4, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx1535-kUgkcrfOrkUM.jpg', genres: ['Thriller', 'Psychological'], status: 'Finished', synopsis: 'A student finds a notebook that kills anyone whose name is written in it.' },
+    { title: 'My Hero Academia', episodes: 24, year: 2016, rating: 7.7, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21459-nYh85uj2Fuwr.jpg', genres: ['Action', 'School'], status: 'Finished', synopsis: 'A quirkless boy trains to become the world’s greatest hero.' },
+    { title: 'Hunter x Hunter (2011)', episodes: 148, year: 2011, rating: 8.9, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx11061-y5gsT1hoHuHw.png', genres: ['Action', 'Adventure'], status: 'Finished', synopsis: 'Gon becomes a Hunter to find his father and faces deadly challenges.' },
+    { title: 'One-Punch Man', episodes: 12, year: 2015, rating: 8.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21087-B5DHjqZ3kW4b.jpg', genres: ['Action', 'Comedy'], status: 'Finished', synopsis: 'An overpowered hero defeats every villain with a single punch.' },
+    { title: 'ONE PIECE', episodes: 1000, year: 1999, rating: 8.7, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21-ELSYx3yMPcKM.jpg', genres: ['Action', 'Adventure'], status: 'Airing', synopsis: 'Monkey D. Luffy sails with his pirate crew to find the One Piece treasure.' },
+    { title: 'Tokyo Ghoul', episodes: 12, year: 2014, rating: 7.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/b20605-k665mVkSug8D.jpg', genres: ['Action', 'Horror'], status: 'Finished', synopsis: 'A student becomes half-ghoul and must live between both worlds.' },
+    { title: 'Fullmetal Alchemist: Brotherhood', episodes: 64, year: 2009, rating: 9.0, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx5114-nSWCgQlmOMtj.jpg', genres: ['Action', 'Drama'], status: 'Finished', synopsis: 'Two brothers search for the Philosopher’s Stone after a forbidden alchemy ritual.' },
+    { title: 'Naruto', episodes: 220, year: 2002, rating: 8.0, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20-dE6UHbFFg1A5.jpg', genres: ['Action', 'Adventure'], status: 'Finished', synopsis: 'A young ninja with a sealed demon works to become the leader of his village.' },
+    { title: 'Sword Art Online', episodes: 25, year: 2012, rating: 7.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx11757-SxYDUzdr9rh2.jpg', genres: ['Action', 'Fantasy'], status: 'Finished', synopsis: 'Players trapped in a VR game must clear it to survive.' },
+    { title: 'A Silent Voice', episodes: 1, year: 2016, rating: 8.8, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20954-sYRfE5jQRtSB.jpg', genres: ['Drama', 'Romance'], status: 'Finished', synopsis: 'A former bully seeks redemption with the deaf girl he once tormented.' },
+    { title: 'Your Name.', episodes: 1, year: 2016, rating: 8.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21519-SUo3ZQuCbYhJ.png', genres: ['Drama', 'Fantasy'], status: 'Finished', synopsis: 'Two strangers mysteriously swap bodies and change each other’s lives.' },
+];
+
 let animeList = [];
+let source = '';
 let current = null;
 let currentEp = 1;
 
@@ -24,41 +43,92 @@ function toast(msg) {
     toastEl.textContent = msg;
     toastEl.classList.add('show');
     clearTimeout(toastEl._t);
-    toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 2600);
+    toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 3000);
+}
+
+async function fetchRetry(url, tries = 3, delay = 1200) {
+    let last;
+    for (let i = 0; i < tries; i++) {
+        try {
+            const res = await fetch(url);
+            if (res.ok) return await res.json();
+            last = new Error(`HTTP ${res.status}`);
+        } catch (e) {
+            last = e;
+        }
+        await new Promise((r) => setTimeout(r, delay * (i + 1)));
+    }
+    throw last;
+}
+
+const JIKAN_QUERY = `${JIKAN}/top/anime?limit=24&type=tv`;
+const ANILIST_QUERY = `query { Page(perPage: 12) { media(type: ANIME, sort: TRENDING_DESC) { title { romaji english } startDate { year } coverImage { large } averageScore episodes genres status } } }`;
+
+async function loadFromJikan() {
+    const data = await fetchRetry(JIKAN_QUERY);
+    return data.data.map((a) => ({
+        id: a.mal_id,
+        title: a.title_english || a.title,
+        image: a.images.jpg.large_image_url || a.images.jpg.image_url,
+        rating: a.score,
+        episodes: a.episodes || 12,
+        year: a.year || '',
+        synopsis: (a.synopsis || '').slice(0, 320),
+        genres: (a.genres || []).slice(0, 3).map((g) => g.name),
+        status: a.status,
+    }));
+}
+
+async function loadFromAniList() {
+    const res = await fetch(ANILIST, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: ANILIST_QUERY }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return (data.data.Page.media || []).map((m) => ({
+        id: null,
+        title: m.title.english || m.title.romaji,
+        image: m.coverImage.large,
+        rating: (m.averageScore || 0) / 10,
+        episodes: m.episodes || 12,
+        year: m.startDate.year || '',
+        synopsis: '',
+        genres: (m.genres || []).slice(0, 3),
+        status: m.status || '',
+    }));
 }
 
 async function loadTrending() {
     try {
-        const res = await fetch(`${API}/top/anime?limit=24&type=tv`);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        animeList = data.data.map((a) => ({
-            id: a.mal_id,
-            title: a.title_english || a.title,
-            image: a.images.jpg.large_image_url || a.images.jpg.image_url,
-            rating: a.score,
-            episodes: a.episodes || 12,
-            year: a.year || '',
-            synopsis: (a.synopsis || '').slice(0, 320),
-            genres: (a.genres || []).slice(0, 3).map((g) => g.name),
-            status: a.status,
-        }));
-        render();
-        $('result-count').textContent = `${animeList.length} titles`;
+        animeList = await loadFromJikan();
+        source = 'MyAnimeList';
     } catch {
-        $('skeleton').hidden = true;
-        toast('Could not load anime right now. Try again in a moment.');
+        try {
+            animeList = await loadFromAniList();
+            source = 'AniList';
+        } catch {
+            animeList = FALLBACK_CATALOG;
+            source = 'offline catalog';
+        }
     }
+    render();
+    $('skeleton').hidden = true;
+    $('result-count').textContent = `${animeList.length} titles · ${source}`;
 }
 
 function render(filter = '') {
     const q = filter.trim().toLowerCase();
     const list = q
-        ? animeList.filter((a) => (a.title + ' ' + a.genres.join(' ')).toLowerCase().includes(q))
+        ? animeList.filter((a) => (a.title + ' ' + (a.genres || []).join(' ')).toLowerCase().includes(q))
         : animeList;
     grid.innerHTML = '';
-    $('skeleton').hidden = true;
-    $('empty').hidden = list.length > 0;
+    if (!list.length) {
+        $('empty').hidden = false;
+        return;
+    }
+    $('empty').hidden = true;
     list.forEach((a, i) => {
         const el = document.createElement('div');
         el.className = 'card';
@@ -97,6 +167,9 @@ function playEpisode(ep) {
     if (meta) {
         $('ep-name').textContent = `Ep ${ep}: ${meta.title}`;
         $('ep-name').title = `${meta.title}${meta.aired ? ' — ' + meta.aired : ''}`;
+    } else {
+        $('ep-name').textContent = `Ep ${ep}`;
+        $('ep-name').title = '';
     }
 }
 
@@ -109,7 +182,7 @@ function openAnime(anime) {
     $('synopsis').textContent = anime.synopsis || 'No synopsis available.';
     $('tags').innerHTML = `
         ${anime.status ? `<span class="tag accent2">${anime.status}</span>` : ''}
-        ${anime.genres.map((g) => `<span class="tag">${g}</span>`).join('')}
+        ${(anime.genres || []).map((g) => `<span class="tag">${g}</span>`).join('')}
     `;
     const total = anime.episodes || 12;
     $('ep-count').textContent = `${total} episodes`;
@@ -127,7 +200,7 @@ function openAnime(anime) {
         });
         list.appendChild(b);
     }
-    loadEpisodeMeta(anime);
+    if (anime.id) loadEpisodeMeta(anime);
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
     playEpisode(1);
@@ -135,7 +208,7 @@ function openAnime(anime) {
 }
 
 function loadEpisodeMeta(anime) {
-    fetch(`${API}/anime/${anime.id}/episodes`)
+    fetch(`${JIKAN}/anime/${anime.id}/episodes`)
         .then((res) => res.ok ? res.json() : Promise.reject())
         .then((data) => {
             const total = anime.episodes || data.data.length || 12;
