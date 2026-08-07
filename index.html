@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AniFlow - Stream Anime</title>
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
 </head>
 <body>
@@ -72,6 +72,16 @@
         <div class="modal-backdrop" id="modal-backdrop"></div>
         <div class="modal-panel" id="modal-panel" role="dialog" aria-modal="true">
             <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+            
+            <div class="server-bar">
+                <label for="server-select">Server:</label>
+                <select id="server-select">
+                    <option value="vidsrc">Server 1 (VidSrc)</option>
+                    <option value="vidsrc2">Server 2 (VidSrc.cc)</option>
+                    <option value="embed2">Server 3 (2Embed)</option>
+                </select>
+            </div>
+
             <div class="player-wrap">
                 <iframe id="embed-player" src="" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
                 <div class="player-mask" id="player-mask">
@@ -102,6 +112,6 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>
