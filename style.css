@@ -414,6 +414,16 @@ body {
 .ep-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
 .section-title.small { font-size: 20px; margin: 0; }
 .ep-status { color: var(--muted); font-size: 13px; }
+.ep-name {
+    color: var(--accent-2);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 18px;
+}
 .ep-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));

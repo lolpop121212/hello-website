@@ -83,6 +83,8 @@ function sourceFor(ep) {
     return SAMPLE_SOURCES[(ep - 1) % SAMPLE_SOURCES.length];
 }
 
+let episodeMeta = [];
+
 function playEpisode(ep) {
     currentEp = ep;
     video.src = sourceFor(ep);
@@ -91,6 +93,11 @@ function playEpisode(ep) {
     document.querySelectorAll('.ep-btn').forEach((b) => {
         b.classList.toggle('current', +b.dataset.ep === ep);
     });
+    const meta = episodeMeta.find((m) => m.id === ep);
+    if (meta) {
+        $('ep-name').textContent = `Ep ${ep}: ${meta.title}`;
+        $('ep-name').title = `${meta.title}${meta.aired ? ' — ' + meta.aired : ''}`;
+    }
 }
 
 function openAnime(anime) {
@@ -108,6 +115,7 @@ function openAnime(anime) {
     $('ep-count').textContent = `${total} episodes`;
     const list = $('ep-list');
     list.innerHTML = '';
+    episodeMeta = [];
     for (let i = 1; i <= total; i++) {
         const b = document.createElement('button');
         b.className = 'ep-btn';
@@ -119,10 +127,38 @@ function openAnime(anime) {
         });
         list.appendChild(b);
     }
+    loadEpisodeMeta(anime);
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
     playEpisode(1);
     toast(`Now playing ${anime.title} — Ep 1`);
+}
+
+function loadEpisodeMeta(anime) {
+    fetch(`${API}/anime/${anime.id}/episodes`)
+        .then((res) => res.ok ? res.json() : Promise.reject())
+        .then((data) => {
+            const total = anime.episodes || data.data.length || 12;
+            for (let i = 1; i <= total; i++) {
+                const raw = data.data[i - 1];
+                if (!raw) continue;
+                episodeMeta.push({
+                    id: raw.mal_id,
+                    title: raw.title || `Episode ${raw.mal_id}`,
+                    aired: raw.aired ? raw.aired.slice(0, 10) : '',
+                });
+            }
+            playEpisode(1);
+            if (current) {
+                $('ep-count').textContent = `${total} episodes · real titles from MyAnimeList`;
+                const btns = document.querySelectorAll('.ep-btn');
+                for (const m of episodeMeta) {
+                    const b = btns[m.id - 1];
+                    if (b) b.title = `${m.title}${m.aired ? ' · ' + m.aired : ''}`;
+                }
+            }
+        })
+        .catch(() => playEpisode(1));
 }
 
 function closeModal() {
