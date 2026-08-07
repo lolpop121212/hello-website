@@ -3,26 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #0f172a;
-            font-family: system-ui, sans-serif;
-        }
-        h1 {
-            font-size: 15vw;
-            color: #ffffff;
-            letter-spacing: 0.05em;
-            text-shadow: 0 0 40px rgba(56, 189, 248, 0.8);
-        }
-    </style>
+    <title>AniFlow - Stream Anime</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
 </head>
 <body>
-    <h1>Hello</h1>
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="logo" id="logo">
+                <span class="logo-mark">▶</span>
+                <span class="logo-text">AniFlow</span>
+            </div>
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="search" placeholder="Search anime..." autocomplete="off">
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="hero-badge">✦ Free Anime Streaming</div>
+            <h1 class="hero-title">Your Anime.<br><span>Always On.</span></h1>
+            <p class="hero-sub">Vast dark-themed library refreshed from a live anime database. Watch episodes in a silky smooth player.</p>
+            <div class="hero-actions">
+                <a href="#trending" class="btn btn-primary">Start Watching</a>
+                <button class="btn btn-ghost" id="surprise">Surprise me</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="trending">
+            <div class="section-head">
+                <h2 class="section-title">Trending Now</h2>
+                <span class="section-hint" id="result-count"></span>
+            </div>
+            <div class="grid" id="anime-grid"></div>
+            <div class="skeleton-grid" id="skeleton">
+                <div class="skeleton-card"></div><div class="skeleton-card"></div>
+                <div class="skeleton-card"></div><div class="skeleton-card"></div>
+                <div class="skeleton-card"></div><div class="skeleton-card"></div>
+            </div>
+            <div class="empty" id="empty" hidden>No results found 🌫</div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>AniFlow · Dark &amp; dreamy · Data from the public <span>MyAnimeList</span> API</p>
+    </footer>
+
+    <div class="modal" id="modal" hidden>
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-panel" id="modal-panel" role="dialog" aria-modal="true">
+            <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+            <div class="player-wrap">
+                <video id="video" controls playsinline preload="metadata"></video>
+                <div class="player-mask" id="player-mask">
+                    <div class="play-ring">▶</div>
+                    <p class="player-now">Episode <span id="mask-ep">1</span></p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="anime-head">
+                    <img class="poster" id="poster" alt="poster">
+                    <div class="anime-meta">
+                        <h2 id="anime-title"></h2>
+                        <div class="tags" id="tags"></div>
+                        <p class="synopsis" id="synopsis"></p>
+                    </div>
+                </div>
+                <div class="ep-box">
+                    <div class="ep-head">
+                        <h3 class="section-title small">Episodes</h3>
+                        <span class="ep-status" id="ep-count"></span>
+                    </div>
+                    <div class="ep-list" id="ep-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
 </body>
 </html>
