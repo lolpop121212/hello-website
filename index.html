@@ -39,8 +39,20 @@
     <main class="container">
         <section id="trending">
             <div class="section-head">
-                <h2 class="section-title">Trending Now</h2>
+                <h2 class="section-title" id="section-title">Trending Now</h2>
                 <span class="section-hint" id="result-count"></span>
+            </div>
+            <div class="chips" id="chips">
+                <button class="chip active" data-name="">Trending</button>
+                <button class="chip" data-name="Action">Action</button>
+                <button class="chip" data-name="Adventure">Adventure</button>
+                <button class="chip" data-name="Comedy">Comedy</button>
+                <button class="chip" data-name="Drama">Drama</button>
+                <button class="chip" data-name="Fantasy">Fantasy</button>
+                <button class="chip" data-name="Horror">Horror</button>
+                <button class="chip" data-name="Romance">Romance</button>
+                <button class="chip" data-name="Sci-Fi">Sci-Fi</button>
+                <button class="chip" data-name="Sports">Sports</button>
             </div>
             <div class="grid" id="anime-grid"></div>
             <div class="skeleton-grid" id="skeleton">
@@ -90,6 +102,6 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>

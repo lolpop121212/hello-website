@@ -206,6 +206,35 @@ body {
 }
 .section-hint { color: var(--muted); font-size: 14px; }
 
+.chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 22px 0 26px;
+}
+.chip {
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s var(--ease);
+}
+.chip:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    transform: translateY(-2px);
+}
+.chip.active {
+    background: linear-gradient(120deg, var(--accent), var(--pink));
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(124, 92, 255, 0.4);
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

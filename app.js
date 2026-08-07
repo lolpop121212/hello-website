@@ -11,6 +11,18 @@ const SAMPLE_SOURCES = [
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
 ];
 
+const GENRES = [
+    { name: 'Action', id: 1 },
+    { name: 'Adventure', id: 2 },
+    { name: 'Comedy', id: 4 },
+    { name: 'Drama', id: 8 },
+    { name: 'Fantasy', id: 10 },
+    { name: 'Horror', id: 14 },
+    { name: 'Romance', id: 22 },
+    { name: 'Sci-Fi', id: 24 },
+    { name: 'Sports', id: 30 },
+];
+
 const FALLBACK_CATALOG = [
     { title: 'Attack on Titan', episodes: 25, year: 2013, rating: 8.5, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx16498-buvcRTBx4NSm.jpg', genres: ['Action', 'Drama', 'Fantasy'], status: 'Finished', synopsis: 'Humanity fights for survival behind enormous walls against man-eating giants called Titans.' },
     { title: 'Demon Slayer: Kimetsu no Yaiba', episodes: 26, year: 2019, rating: 8.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx101922-WBsBl0ClmgYL.jpg', genres: ['Action', 'Fantasy', 'Adventure'], status: 'Finished', synopsis: 'Tanjiro becomes a demon slayer to cure his sister Nezuko and avenge his family.' },
@@ -24,6 +36,8 @@ const FALLBACK_CATALOG = [
     { title: 'Fullmetal Alchemist: Brotherhood', episodes: 64, year: 2009, rating: 9.0, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx5114-nSWCgQlmOMtj.jpg', genres: ['Action', 'Drama'], status: 'Finished', synopsis: 'Two brothers search for the Philosopher’s Stone after a forbidden alchemy ritual.' },
     { title: 'Naruto', episodes: 220, year: 2002, rating: 8.0, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20-dE6UHbFFg1A5.jpg', genres: ['Action', 'Adventure'], status: 'Finished', synopsis: 'A young ninja with a sealed demon works to become the leader of his village.' },
     { title: 'Sword Art Online', episodes: 25, year: 2012, rating: 7.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx11757-SxYDUzdr9rh2.jpg', genres: ['Action', 'Fantasy'], status: 'Finished', synopsis: 'Players trapped in a VR game must clear it to survive.' },
+    { title: 'Sousou no Frieren', episodes: 28, year: 2023, rating: 9.3, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx154587-qQTzQnEJJ3oB.jpg', genres: ['Adventure', 'Drama', 'Fantasy'], status: 'Finished', synopsis: 'An elven mage journeys to a heaven to meet a long-lost friend.' },
+    { title: 'Steins;Gate', episodes: 24, year: 2011, rating: 9.1, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx9253-tIUXF2gfU8Sg.jpg', genres: ['Sci-Fi', 'Thriller'], status: 'Finished', synopsis: 'A scientist discovers he can send messages to the past and alters fate.' },
     { title: 'A Silent Voice', episodes: 1, year: 2016, rating: 8.8, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx20954-sYRfE5jQRtSB.jpg', genres: ['Drama', 'Romance'], status: 'Finished', synopsis: 'A former bully seeks redemption with the deaf girl he once tormented.' },
     { title: 'Your Name.', episodes: 1, year: 2016, rating: 8.6, image: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx21519-SUo3ZQuCbYhJ.png', genres: ['Drama', 'Fantasy'], status: 'Finished', synopsis: 'Two strangers mysteriously swap bodies and change each other’s lives.' },
 ];
@@ -32,6 +46,7 @@ let animeList = [];
 let source = '';
 let current = null;
 let currentEp = 1;
+let lastQuery = '';
 
 const $ = (id) => document.getElementById(id);
 const grid = $('anime-grid');
@@ -61,61 +76,109 @@ async function fetchRetry(url, tries = 3, delay = 1200) {
     throw last;
 }
 
-const JIKAN_QUERY = `${JIKAN}/top/anime?limit=24&type=tv`;
-const ANILIST_QUERY = `query { Page(perPage: 12) { media(type: ANIME, sort: TRENDING_DESC) { title { romaji english } startDate { year } coverImage { large } averageScore episodes genres status } } }`;
+const mapJikan = (a) => ({
+    id: a.mal_id,
+    title: a.title_english || a.title,
+    image: a.images.jpg.large_image_url || a.images.jpg.image_url,
+    rating: a.score,
+    episodes: a.episodes || 12,
+    year: a.year || '',
+    synopsis: (a.synopsis || '').slice(0, 320),
+    genres: (a.genres || []).slice(0, 3).map((g) => g.name),
+    status: a.status,
+});
 
-async function loadFromJikan() {
-    const data = await fetchRetry(JIKAN_QUERY);
-    return data.data.map((a) => ({
-        id: a.mal_id,
-        title: a.title_english || a.title,
-        image: a.images.jpg.large_image_url || a.images.jpg.image_url,
-        rating: a.score,
-        episodes: a.episodes || 12,
-        year: a.year || '',
-        synopsis: (a.synopsis || '').slice(0, 320),
-        genres: (a.genres || []).slice(0, 3).map((g) => g.name),
-        status: a.status,
-    }));
-}
+const mapAniList = (m) => ({
+    id: null,
+    title: m.title.english || m.title.romaji,
+    image: m.coverImage.large,
+    rating: (m.averageScore || 0) / 10,
+    episodes: m.episodes || 12,
+    year: m.startDate.year || '',
+    synopsis: '',
+    genres: (m.genres || []).slice(0, 3),
+    status: m.status || '',
+});
 
-async function loadFromAniList() {
+async function postAniList(query, variables = {}) {
     const res = await fetch(ANILIST, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: ANILIST_QUERY }),
+        body: JSON.stringify({ query, variables }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    return (data.data.Page.media || []).map((m) => ({
-        id: null,
-        title: m.title.english || m.title.romaji,
-        image: m.coverImage.large,
-        rating: (m.averageScore || 0) / 10,
-        episodes: m.episodes || 12,
-        year: m.startDate.year || '',
-        synopsis: '',
-        genres: (m.genres || []).slice(0, 3),
-        status: m.status || '',
-    }));
+    return res.json();
 }
+
+const ANILIST_BASE = `
+    title { romaji english }
+    startDate { year }
+    coverImage { large }
+    averageScore episodes genres status
+`;
 
 async function loadTrending() {
     try {
-        animeList = await loadFromJikan();
+        const pages = await Promise.all(
+            [1, 2, 3, 4].map((p) => fetchRetry(`${JIKAN}/top/anime?limit=25&type=tv&page=${p}`, 2, 1000))
+        );
+        const seen = new Set();
+        animeList = pages
+            .flatMap((pg) => pg.data)
+            .filter((a) => (seen.has(a.mal_id) ? false : (seen.add(a.mal_id), true)))
+            .map(mapJikan);
         source = 'MyAnimeList';
     } catch {
         try {
-            animeList = await loadFromAniList();
+            const data = await postAniList(`query { Page(perPage: 50) { media(type: ANIME, sort: TRENDING_DESC) { ${ANILIST_BASE} } } }`);
+            animeList = (data.data.Page.media || []).map(mapAniList);
             source = 'AniList';
         } catch {
-            animeList = FALLBACK_CATALOG;
+            animeList = FALLBACK_CATALOG.slice();
             source = 'offline catalog';
         }
     }
+    lastQuery = '';
+    $('search').value = '';
+    setSection('Trending Now', `${animeList.length} titles · ${source}`, '🔥');
     render();
-    $('skeleton').hidden = true;
-    $('result-count').textContent = `${animeList.length} titles · ${source}`;
+}
+
+async function searchAnime(q) {
+    lastQuery = q;
+    try {
+        const data = await fetchRetry(`${JIKAN}/anime?q=${encodeURIComponent(q)}&limit=30&sfw=true`, 2, 1000);
+        animeList = data.data.map(mapJikan);
+        source = 'MyAnimeList';
+    } catch {
+        const res = await postAniList(`query ($q: String) { Page(perPage: 30) { media(type: ANIME, search: $q) { ${ANILIST_BASE} } } }`, { q });
+        animeList = (res.data.Page.media || []).map(mapAniList);
+        source = 'AniList';
+    }
+    setSectionTitle(`Results for "${q}"`, `${animeList.length} titles · ${source}`, '🔎');
+    render();
+}
+
+async function loadGenre(genre) {
+    lastQuery = '';
+    $('search').value = '';
+    try {
+        const data = await fetchRetry(`${JIKAN}/anime?genres=${genre.id}&limit=24&order_by=score&sort=desc`, 2, 1000);
+        animeList = data.data.map(mapJikan);
+        source = 'MyAnimeList';
+    } catch {
+        const res = await postAniList(`query ($g: String) { Page(perPage: 24) { media(type: ANIME, genre: $g, sort: POPULARITY_DESC) { ${ANILIST_BASE} } } }`, { g: genre.name });
+        animeList = res.data.Page.media.map(mapAniList);
+        source = 'AniList';
+    }
+    setSectionTitle(`${genre.name} Anime`, `${animeList.length} titles · ${source}`, '🎯');
+    render();
+}
+
+function setSectionTitle(text, hint, emoji) {
+    $('section-title').textContent = text;
+    $('result-count').textContent = hint;
+    document.title = `${emoji} ${text} — AniFlow`;
 }
 
 function render(filter = '') {
@@ -257,6 +320,27 @@ $('logo').addEventListener('click', () => {
 $('surprise').addEventListener('click', () => {
     if (animeList.length) openAnime(animeList[Math.floor(Math.random() * animeList.length)]);
 });
-$('search').addEventListener('input', (e) => render(e.target.value));
+
+$('chips').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    document.querySelectorAll('.chip').forEach((c) => c.classList.remove('active'));
+    chip.classList.add('active');
+    const name = chip.dataset.name;
+    if (!name) { loadTrending(); return; }
+    const genre = GENRES.find((g) => g.name === name);
+    if (genre) loadGenre(genre);
+});
+
+let searchTimer = null;
+$('search').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    const q = e.target.value.trim();
+    if (!q) {
+        if (lastQuery) loadTrending();
+        return;
+    }
+    searchTimer = setTimeout(() => searchAnime(q), 400);
+});
 
 loadTrending();
